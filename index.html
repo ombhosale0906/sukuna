@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sukuna Expression Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #000000 0%, #1a0000 100%);
+            color: #ff0000;
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Start Screen */
+        .start-screen {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.98);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: opacity 1s ease-out;
+        }
+
+        .joker-text {
+            font-size: 4rem;
+            font-weight: bold;
+            text-shadow: 0 0 20px #ff0000, 0 0 30px #ff0000;
+            margin-bottom: 2rem;
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 20px #ff0000, 0 0 30px #ff0000;
+            }
+            to {
+                text-shadow: 0 0 30px #ff0000, 0 0 40px #ff0000, 0 0 50px #ff0000;
+            }
+        }
+
+        .joker-emoji {
+            font-size: 8rem;
+            margin-bottom: 2rem;
+            animation: float 3s infinite ease-in-out;
+            text-shadow: 0 0 30px #ff0000;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .start-button {
+            padding: 15px 30px;
+            background: #ff0000;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+        }
+
+        .start-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px #ff0000;
+        }
+
+        /* Main Game */
+        .game-container {
+            display: none;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px #ff0000;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .emoji-face-container {
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 3rem;
+            perspective: 1000px;
+        }
+
+        .emoji-face {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(45deg, #ff6b6b, #ff0000, #8b0000);
+            border-radius: 50%;
+            margin: 50px auto;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateY(-15deg) rotateX(5deg);
+            transition: transform 0.8s ease;
+            box-shadow: 
+                0 0 50px rgba(255, 0, 0, 0.6),
+                inset 0 0 20px rgba(0, 0, 0, 0.3);
+            animation: faceGlow 3s infinite alternate;
+        }
+
+        @keyframes faceGlow {
+            from { box-shadow: 0 0 50px rgba(255, 0, 0, 0.6); }
+            to { box-shadow: 0 0 70px rgba(255, 0, 0, 0.8); }
+        }
+
+        .eye {
+            width: 30px;
+            height: 40px;
+            background: #000;
+            border-radius: 50%;
+            position: absolute;
+            top: 70px;
+        }
+
+        .eye-left {
+            left: 50px;
+        }
+
+        .eye-right {
+            right: 50px;
+        }
+
+        .pupil {
+            width: 15px;
+            height: 15px;
+            background: #ff4500;
+            border-radius: 50%;
+            position: absolute;
+            top: 12px;
+            left: 7px;
+            transition: all 0.3s ease;
+        }
+
+        .mouth-container {
+            position: absolute;
+            bottom: 50px;
+            left: 0;
+            right: 0;
+            transition: all 0.3s ease;
+        }
+
+        .mouth {
+            width: 80px;
+            height: 30px;
+            background: #000;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .mouth.neutral {
+            border-radius: 0 0 40px 40px;
+        }
+
+        .mouth.smirk {
+            border-radius: 0 0 40px 40px;
+            height: 20px;
+            width: 70px;
+        }
+
+        .mouth.rage {
+            border-radius: 20px;
+            height: 40px;
+        }
+
+        .mouth.laugh {
+            border-radius: 0 0 40px 40px;
+            height: 50px;
+        }
+
+        .mouth.menacing {
+            border-radius: 0 0 40px 40px;
+            height: 15px;
+            width: 60px;
+        }
+
+        .tongue {
+            width: 40px;
+            height: 20px;
+            background: #ff6b6b;
+            border-radius: 20px 20px 0 0;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+        }
+
+        .teeth {
+            width: 60px;
+            height: 12px;
+            background: white;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 6px 6px 0 0;
+            display: none;
+        }
+
+        .cursed-mark {
+            position: absolute;
+            width: 25px;
+            height: 5px;
+            background: #ff0000;
+            border-radius: 2px;
+            opacity: 0.8;
+        }
+
+        .mark-1 {
+            top: 40px;
+            left: 30px;
+            transform: rotate(-30deg);
+        }
+
+        .mark-2 {
+            top: 40px;
+            right: 30px;
+            transform: rotate(30deg);
+        }
+
+        .mark-3 {
+            bottom: 60px;
+            left: 40px;
+            transform: rotate(-45deg);
+        }
+
+        .mark-4 {
+            bottom: 60px;
+            right: 40px;
+            transform: rotate(45deg);
+        }
+
+        .controls {
+            margin: 2rem 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .expression-btn {
+            padding: 15px 25px;
+            background: #2a0000;
+            border: 2px solid #ff0000;
+            color: #ff0000;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: 1.1rem;
+            min-width: 120px;
+        }
+
+        .expression-btn:hover {
+            background: #ff0000;
+            color: #000;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+        }
+
+        .expression-btn.active {
+            background: #ff0000;
+            color: #000;
+            box-shadow: 0 0 20px #ff0000;
+            transform: scale(1.05);
+        }
+
+        .current-expression {
+            margin-top: 2rem;
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px #ff0000;
+            min-height: 40px;
+        }
+
+        .rotate-hint {
+            margin-top: 1rem;
+            font-size: 1rem;
+            color: #666;
+            animation: fadeInOut 3s infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .joker-text {
+                font-size: 2.5rem;
+            }
+            
+            .joker-emoji {
+                font-size: 5rem;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .emoji-face-container {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .emoji-face {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .eye {
+                width: 25px;
+                height: 35px;
+                top: 50px;
+            }
+            
+            .eye-left {
+                left: 40px;
+            }
+            
+            .eye-right {
+                right: 40px;
+            }
+            
+            .mouth {
+                width: 60px;
+            }
+            
+            .expression-btn {
+                padding: 12px 20px;
+                font-size: 1rem;
+                min-width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div class="start-screen" id="startScreen">
+            <div class="joker-text">YOU ARE NEXT</div>
+            <div class="joker-emoji">😈</div>
+            <button class="start-button" onclick="startGame()">BEGIN THE CURSED GAME</button>
+        </div>
+
+        <!-- Main Game -->
+        <div class="game-container" id="gameContainer">
+            <h1 class="title">SUKUNA EXPRESSION MASTER</h1>
+            
+            <div class="emoji-face-container">
+                <div class="emoji-face" id="emojiFace">
+                    <div class="eye eye-left">
+                        <div class="pupil" id="leftPupil"></div>
+                    </div>
+                    <div class="eye eye-right">
+                        <div class="pupil" id="rightPupil"></div>
+                    </div>
+                    
+                    <div class="mouth-container" id="mouthContainer">
+                        <div class="mouth neutral" id="mouth">
+                            <div class="tongue" id="tongue"></div>
+                            <div class="teeth" id="teeth"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="cursed-mark mark-1"></div>
+                    <div class="cursed-mark mark-2"></div>
+                    <div class="cursed-mark mark-3"></div>
+                    <div class="cursed-mark mark-4"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="expression-btn" onclick="changeExpression('neutral')">NEUTRAL</button>
+                <button class="expression-btn" onclick="changeExpression('smirk')">SMIRK</button>
+                <button class="expression-btn" onclick="changeExpression('rage')">RAGE</button>
+                <button class="expression-btn" onclick="changeExpression('laugh')">LAUGH</button>
+                <button class="expression-btn" onclick="changeExpression('menacing')">MENACING</button>
+            </div>
+
+            <div class="current-expression" id="currentExpression">
+                Choose an expression to begin...
+            </div>
+
+            <div class="rotate-hint">
+                ← Drag to rotate the face →
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isDragging = false;
+        let startX, startY;
+        let rotationX = 5;
+        let rotationY = -15;
+        let currentExpression = 'neutral';
+
+        function startGame() {
+            const startScreen = document.getElementById('startScreen');
+            const gameContainer = document.getElementById('gameContainer');
+            
+            startScreen.style.opacity = '0';
+            startScreen.style.pointerEvents = 'none';
+            
+            setTimeout(() => {
+                startScreen.style.display = 'none';
+                gameContainer.style.display = 'block';
+                
+                // Initial animation
+                const emojiFace = document.getElementById('emojiFace');
+                emojiFace.style.transform = 'rotateY(-15deg) rotateX(5deg)';
+                
+                setTimeout(() => {
+                    changeExpression('neutral');
+                }, 1000);
+            }, 1000);
+        }
+
+        function changeExpression(expression) {
+            currentExpression = expression;
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.expression-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            const mouth = document.getElementById('mouth');
+            const tongue = document.getElementById('tongue');
+            const teeth = document.getElementById('teeth');
+            const leftPupil = document.getElementById('leftPupil');
+            const rightPupil = document.getElementById('rightPupil');
+            const currentExpressionText = document.getElementById('currentExpression');
+            const emojiFace = document.getElementById('emojiFace');
+
+            // Reset mouth class
+            mouth.className = 'mouth';
+            
+            // Reset all elements
+            tongue.style.display = 'none';
+            teeth.style.display = 'none';
+            leftPupil.style.transform = 'translate(0, 0)';
+            rightPupil.style.transform = 'translate(0, 0)';
+
+            switch(expression) {
+                case 'neutral':
+                    currentExpressionText.textContent = "Neutral - The King's Gaze";
+                    mouth.classList.add('neutral');
+                    break;
+                    
+                case 'smirk':
+                    currentExpressionText.textContent = "Smirk - Confidence of a Curse";
+                    mouth.classList.add('smirk');
+                    leftPupil.style.transform = 'translate(5px, 0)';
+                    rightPupil.style.transform = 'translate(-5px, 0)';
+                    emojiFace.style.transform = 'rotateY(-25deg) rotateX(0deg)';
+                    break;
+                    
+                case 'rage':
+                    currentExpressionText.textContent = "Rage - Unleashed Fury";
+                    mouth.classList.add('rage');
+                    teeth.style.display = 'block';
+                    leftPupil.style.transform = 'translate(0, -5px)';
+                    rightPupil.style.transform = 'translate(0, -5px)';
+                    emojiFace.style.transform = 'rotateY(0deg) rotateX(5deg)';
+                    break;
+                    
+                case 'laugh':
+                    currentExpressionText.textContent = "Laugh - Madness Personified";
+                    mouth.classList.add('laugh');
+                    tongue.style.display = 'block';
+                    leftPupil.style.transform = 'translate(0, 5px)';
+                    rightPupil.style.transform = 'translate(0, 5px)';
+                    emojiFace.style.transform = 'rotateY(-30deg) rotateX(-5deg)';
+                    break;
+                    
+                case 'menacing':
+                    currentExpressionText.textContent = "Menacing - Domination";
+                    mouth.classList.add('menacing');
+                    leftPupil.style.transform = 'translate(-3px, -3px)';
+                    rightPupil.style.transform = 'translate(3px, -3px)';
+                    emojiFace.style.transform = 'rotateY(-10deg) rotateX(8deg)';
+                    break;
+            }
+        }
+
+        // 3D Rotation with Mouse Drag
+        document.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            
+            rotationY += deltaX * 0.5;
+            rotationX += deltaY * 0.3;
+            
+            // Clamp rotation for better UX
+            rotationX = Math.max(-20, Math.min(20, rotationX));
+            rotationY = Math.max(-45, Math.min(45, rotationY));
+            
+            const emojiFace = document.getElementById('emojiFace');
+            emojiFace.style.transform = `rotateY(${rotationY}deg) rotateX(${rotationX}deg)`;
+            
+            startX = e.clientX;
+            startY = e.clientY;
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        document.addEventListener('mouseleave', () => {
+            isDragging = false;
+        });
+
+        // Touch support for mobile
+        document.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            e.preventDefault();
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            
+            const deltaX = e.touches[0].clientX - startX;
+            const deltaY = e.touches[0].clientY - startY;
+            
+            rotationY += deltaX * 0.5;
+            rotationX += deltaY * 0.3;
+            
+            rotationX = Math.max(-20, Math.min(20, rotationX));
+            rotationY = Math.max(-45, Math.min(45, rotationY));
+            
+            const emojiFace = document.getElementById('emojiFace');
+            emojiFace.style.transform = `rotateY(${rotationY}deg) rotateX(${rotationX}deg)`;
+            
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            e.preventDefault();
+        });
+
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // Initial setup
+        window.addEventListener('load', () => {
+            // Auto-start for testing (remove this in production)
+            // startGame();
+        });
+    </script>
+</body>
+</html>
+
